@@ -44,8 +44,7 @@ export default function WorkoutList() {
       sx={{
         display: 'flex',
         flexDirection: 'column',
-        gap: 2,
-        overflow: 'auto'
+        gap: 2
       }}
     >
       <Typography level='h4' sx={{ fontWeight: 'bold', textAlign: 'center' }}>
@@ -56,7 +55,9 @@ export default function WorkoutList() {
         size='sm'
         sx={{
           '--ListItem-radius': '8px',
-          '--List-gap': '10px'
+          '--List-gap': '10px',
+          height: '80vh',
+          overflow: 'auto'
         }}
       >
         {workoutData.map((interval, index) => (
