@@ -13,10 +13,24 @@ import Navigation from './components/Navigation'
 import StatCardGrid from './components/StatsCardGrid'
 import { CardStat } from './entities/cardStat'
 
+import trainingData from './constants/workout1.json'
+import { useWorkoutPlayer } from './hooks/useWorkoutPlayer'
+
 export default function FilesExample() {
   const [drawerOpen, setDrawerOpen] = React.useState(false)
+  const {
+    currentStep,
+    timeLeft,
+    isRunning,
+    isFinished,
+    start,
+    stop,
+    next,
+    stepCounter,
+    reset
+  } = useWorkoutPlayer(trainingData)
 
-  const statsData: [CardStat] = [
+  const statsData: CardStat[] = [
     {
       color: 'neutral',
       title: 'Watts ⚡️',
@@ -98,6 +112,21 @@ export default function FilesExample() {
                 gap: 3
               }}
             >
+              <div>
+                {isFinished ? (
+                  <h1>Workout Complete!</h1>
+                ) : (
+                  <div>
+                    <h2>Current Step {stepCounter}:</h2>
+                    <pre>{JSON.stringify(currentStep, null, 2)}</pre>
+                    <h3>Time Left: {timeLeft}s</h3>
+                  </div>
+                )}
+                <button onClick={start}>Start</button>
+                <button onClick={next}>Next</button>
+                <button onClick={stop}>Stop</button>
+                <button onClick={reset}>Reset</button>
+              </div>
               <Card size='lg' orientation='horizontal' sx={{ width: '100%' }}>
                 <CardContent
                   sx={{
