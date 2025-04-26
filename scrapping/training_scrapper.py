@@ -30,5 +30,7 @@ for article_id in article_ids:
 print(f"Workout length : {len(article_ids)}")
 
 workout = Workout("""10min from 25 to 75% FTP30sec @ 95rpm, 95% FTP30sec @ 85rpm, 50% FTP30sec @ 105rpm, 105% FTP30sec @ 85rpm, 50% FTP30sec @ 115rpm, 115% FTP30sec @ 85rpm, 50% FTP2min @ 85rpm, 50% FTP1min from 115 to 140% FTP1min @ 85rpm, 50% FTP2min @ 100rpm, 115% FTP3min @ 85rpm, 65% FTP1min from 115 to 140% FTP1min @ 85rpm, 50% FTP2min @ 100rpm, 115% FTP3min @ 85rpm, 65% FTP1min from 115 to 140% FTP1min @ 85rpm, 50% FTP2min @ 100rpm, 115% FTP3min @ 85rpm, 65% FTP1min from 115 to 140% FTP1min @ 85rpm, 50% FTP2min @ 100rpm, 115% FTP3min @ 85rpm, 65% FTP1min from 115 to 140% FTP1min @ 85rpm, 50% FTP2min @ 100rpm, 115% FTP3min @ 85rpm, 65% FTP1min from 115 to 140% FTP1min @ 85rpm, 50% FTP2min @ 100rpm, 115% FTP3min @ 85rpm, 65% FTP3min from 65 to 25% FTPView watts Enter FTP""")
-for step in workout.to_list():
-    print(step)
+# for step in workout.to_list():
+#     print(step)
+
+print(workout.get_workout_steps())

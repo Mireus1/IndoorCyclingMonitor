@@ -85,3 +85,6 @@ class Workout:
 
     def to_list(self):
         return [step.to_dict() for step in self.steps]
+
+    def get_workout_steps(self):
+        return [step.to_dict() for step in self.steps]
