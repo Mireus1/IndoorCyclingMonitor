@@ -6,6 +6,7 @@ import Stack from '@mui/joy/Stack'
 import { CssVarsProvider } from '@mui/joy/styles'
 import Typography from '@mui/joy/Typography'
 import * as React from 'react'
+import { useEffect } from 'react'
 
 import Header from './components/Header'
 import Layout from './components/Layout'
@@ -15,8 +16,10 @@ import { CardStat } from './entities/cardStat'
 
 import trainingData from './constants/workout1.json'
 import { useWorkoutPlayer } from './hooks/useWorkoutPlayer'
+import useCyclingDataStore from './store/useCyclingDataStore'
 
 export default function FilesExample() {
+  const { power, heartRate, cadence, setCyclingData } = useCyclingDataStore()
   const [drawerOpen, setDrawerOpen] = React.useState(false)
   const {
     currentStep,
@@ -47,6 +50,23 @@ export default function FilesExample() {
       value: 80
     }
   ]
+
+  useEffect(() => {
+    const fetchVitals = async () => {
+      const response = await fetch('/api/vitals')
+      const data = await response.json()
+      setCyclingData({
+        power: data.power,
+        heartRate: data.heartRate,
+        cadence: data.cadence
+      })
+    }
+
+    fetchVitals()
+
+    const interval = setInterval(fetchVitals, 500)
+    return () => clearInterval(interval)
+  }, [setCyclingData])
 
   return (
     <CssVarsProvider disableTransitionOnChange>

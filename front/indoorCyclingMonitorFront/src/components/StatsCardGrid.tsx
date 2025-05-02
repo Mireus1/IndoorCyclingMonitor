@@ -1,5 +1,5 @@
 import { Box, Card, CardContent, Typography } from '@mui/joy'
-import { CardStat } from './entities/cardStat'
+import { CardStat } from '../entities/cardStat'
 
 interface StatCardGridProps {
   stats: CardStat[]
