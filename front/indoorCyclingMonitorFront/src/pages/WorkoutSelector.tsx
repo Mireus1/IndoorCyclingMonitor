@@ -1,4 +1,5 @@
 import SearchIcon from '@mui/icons-material/Search'
+import Sensors from '@mui/icons-material/Sensors'
 import {
   Autocomplete,
   Box,
@@ -9,8 +10,13 @@ import {
   Sheet,
   Typography
 } from '@mui/joy'
+import IconButton from '@mui/joy/IconButton'
 import { CssVarsProvider } from '@mui/joy/styles'
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { SensorModal } from '../components/SensorModal'
+import workout1 from '../constants/workout1.json'
+import useWorkoutStore from '../store/useWorkoutStore'
 
 const workouts = [
   { title: 'Hold 200 W for 2 minutes', duration: '2:00' },
@@ -26,7 +32,22 @@ const workouts = [
 ]
 
 export default function WorkoutSelector() {
+  const { selectedWorkout, setWorkout } = useWorkoutStore()
   const [filteredWorkouts, setFilteredWorkouts] = useState(workouts)
+  const [loadingIndex, setLoadingIndex] = useState<number | null>(null)
+  const [openModal, setOpenModal] = useState<boolean>(false)
+  const navigate = useNavigate()
+
+  const handleWorkoutSelect = (workout: object, index: number) => {
+    console.log('Selected workout:', workout)
+    setLoadingIndex(index)
+    setWorkout(workout1) // or workout1.steps
+
+    setTimeout(() => {
+      setLoadingIndex(null)
+      navigate('/home')
+    }, 3000)
+  }
 
   return (
     <CssVarsProvider disableTransitionOnChange>
@@ -71,6 +92,16 @@ export default function WorkoutSelector() {
             startDecorator={<SearchIcon />}
             variant='outlined'
           />
+          <IconButton
+            disabled={false}
+            variant='solid'
+            color='primary'
+            size='lg'
+            onClick={() => setOpenModal(true)}
+          >
+            <Sensors />
+          </IconButton>
+          <SensorModal open={openModal} onClose={() => setOpenModal(false)} />
         </Sheet>
 
         {/* Grid section */}
@@ -123,18 +154,22 @@ export default function WorkoutSelector() {
                 </CardContent>
                 <Box sx={{ p: 2, pt: 0 }}>
                   <Button
+                    key={index}
                     fullWidth
                     variant='outlined'
+                    loading={loadingIndex === index}
                     onClick={() => alert(`Selected: ${workout.title}`)}
                     sx={{ mb: 1 }}
                   >
                     View Workout
                   </Button>
                   <Button
+                    key={index}
                     fullWidth
                     variant='solid'
                     color='success'
-                    onClick={() => alert(`Selected: ${workout.title}`)}
+                    loading={loadingIndex === index}
+                    onClick={() => handleWorkoutSelect(workout, index)}
                   >
                     Start
                   </Button>
