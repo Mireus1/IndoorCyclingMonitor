@@ -25,6 +25,7 @@ export default function Home() {
   const [drawerOpen, setDrawerOpen] = React.useState(false)
   const {
     currentStep,
+    currentStepIndex,
     timeLeft,
     isRunning,
     isFinished,
@@ -160,7 +161,11 @@ export default function Home() {
 
       {drawerOpen && (
         <Layout.SideDrawer onClose={() => setDrawerOpen(false)}>
-          <Navigation />
+          <Navigation
+            workoutData={trainingData}
+            currentStep={currentStep}
+            currentStepIndex={currentStepIndex}
+          />
         </Layout.SideDrawer>
       )}
 
@@ -201,7 +206,11 @@ export default function Home() {
           <Header />
         </Layout.Header>
         <Layout.SideNav>
-          <Navigation />
+          <Navigation
+            workoutData={trainingData}
+            currentStep={currentStep}
+            currentStepIndex={currentStepIndex}
+          />
         </Layout.SideNav>
         <Layout.Main>
           <Box

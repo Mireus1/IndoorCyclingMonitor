@@ -3,55 +3,121 @@ import TimerIcon from '@mui/icons-material/Timer'
 import Box from '@mui/joy/Box'
 import Card from '@mui/joy/Card'
 import Chip from '@mui/joy/Chip'
-import List from '@mui/joy/List'
 import ListItem from '@mui/joy/ListItem'
 import Typography from '@mui/joy/Typography'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef } from 'react'
+import { Step } from '../entities/Step'
 
-// Sample workout data
-const workoutData = [
-  { time: 120, watts: 200 },
-  { time: 90, watts: 180 },
-  { time: 90, watts: 180 },
-  { time: 90, watts: 180 },
-  { time: 90, watts: 180 },
-  { time: 60, watts: 220 },
-  { time: 150, watts: 190 }
-]
+interface WorkoutListProps {
+  workoutData: Step[]
+  currentStep: Step
+  currentStepIndex: number
+}
 
 // Function to format time (e.g., 120 seconds → "02:00")
-const formatTime = (seconds) => {
+const formatTime = (seconds: number) => {
   const minutes = Math.floor(seconds / 60)
   const secs = seconds % 60
   return `${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`
 }
 
-export default function WorkoutList() {
-  const [currentStep, setCurrentStep] = useState(3)
+export default function WorkoutList({
+  workoutData,
+  currentStep,
+  currentStepIndex
+}: WorkoutListProps) {
+  const itemRefs = useRef<(HTMLLIElement | null)[]>([])
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentStep((prev) =>
-        prev < workoutData.length - 1 ? prev + 1 : prev
-      )
-    }, workoutData[currentStep].time * 1000) // Move to the next step after the duration
-
-    return () => clearInterval(interval)
-  }, [currentStep])
-
+    const activeRef = itemRefs.current[currentStepIndex]
+    if (activeRef) {
+      activeRef.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    }
+  }, [currentStepIndex])
   return (
     <Box
       sx={{
         display: 'flex',
         flexDirection: 'column',
-        gap: 2
+        gap: 2,
+        height: '100vh',
+        overflowY: 'auto'
       }}
     >
       <Typography level='h4' sx={{ fontWeight: 'bold', textAlign: 'center' }}>
         Workout Intervals
       </Typography>
 
-      <List
+      {workoutData && workoutData.length > 0 ? (
+        workoutData.map((interval, index) => {
+          const isCurrent = index === currentStepIndex
+          const isPowerTarget =
+            interval.ftp_percent !== null && interval.ftp_percent !== undefined
+          const isProgressive =
+            interval.progressive_range !== null &&
+            interval.progressive_range !== undefined
+
+          return (
+            <ListItem
+              key={index}
+              sx={{ width: '100%' }}
+              ref={(el) => (itemRefs.current[index] = el)}
+            >
+              <Card
+                variant={isCurrent ? 'outlined' : 'solid'}
+                color={isCurrent ? 'primary' : ''}
+                outline-color={isCurrent ? 'primary' : 'neutral'}
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  p: 2,
+                  width: '100%',
+                  borderRadius: '8px',
+                  transition: '0.3s ease-in-out',
+                  boxShadow: isCurrent ? 'lg' : 'sm'
+                }}
+              >
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <TimerIcon fontSize='small' />
+                  <Typography>{formatTime(interval.duration)}</Typography>
+                </Box>
+
+                {isPowerTarget && (
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <FlashOnIcon fontSize='small' />
+                    <Typography>{interval.ftp_percent} % FTP</Typography>
+                  </Box>
+                )}
+
+                {isProgressive && (
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <FlashOnIcon fontSize='small' />
+                    <Typography>
+                      Progressive {interval.progressive_range.from} →{' '}
+                      {interval.progressive_range.to} rpm
+                    </Typography>
+                  </Box>
+                )}
+
+                {isCurrent && (
+                  <Chip size='sm' color='success'>
+                    Active
+                  </Chip>
+                )}
+              </Card>
+            </ListItem>
+          )
+        })
+      ) : (
+        <ListItem sx={{ justifyContent: 'center' }}>
+          <Typography level='body-md' color='neutral'>
+            No workout data available.
+          </Typography>
+        </ListItem>
+      )}
+
+      {/* <List
         size='sm'
         sx={{
           '--ListItem-radius': '8px',
@@ -63,8 +129,8 @@ export default function WorkoutList() {
         {workoutData.map((interval, index) => (
           <ListItem key={index} sx={{ width: '100%' }}>
             <Card
-              variant={index === currentStep ? 'solid' : 'outlined'}
-              color={index === currentStep ? 'primary' : 'neutral'}
+              variant={index === currentStepIndex ? 'solid' : 'outlined'}
+              color={index === currentStepIndex ? 'primary' : 'neutral'}
               sx={{
                 display: 'flex',
                 alignItems: 'center',
@@ -73,18 +139,18 @@ export default function WorkoutList() {
                 width: '100%',
                 borderRadius: '8px',
                 transition: '0.3s ease-in-out',
-                boxShadow: index === currentStep ? 'lg' : 'sm'
+                boxShadow: index === currentStepIndex ? 'lg' : 'sm'
               }}
             >
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <TimerIcon fontSize='small' />
-                <Typography>{formatTime(interval.time)}</Typography>
+                <Typography>{formatTime(interval.duration)}</Typography>
               </Box>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <FlashOnIcon fontSize='small' />
-                <Typography>{interval.watts} W</Typography>
+                <Typography>{interval.ftp_percent} W</Typography>
               </Box>
-              {index === currentStep && (
+              {index === currentStepIndex && (
                 <Chip size='sm' color='success'>
                   Active
                 </Chip>
@@ -92,7 +158,7 @@ export default function WorkoutList() {
             </Card>
           </ListItem>
         ))}
-      </List>
+      </List> */}
     </Box>
   )
 }
