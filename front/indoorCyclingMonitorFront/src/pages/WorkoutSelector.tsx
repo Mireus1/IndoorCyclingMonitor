@@ -12,41 +12,126 @@ import {
 } from '@mui/joy'
 import IconButton from '@mui/joy/IconButton'
 import { CssVarsProvider } from '@mui/joy/styles'
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { FTPModal } from '../components/FtpModal'
 import { SensorModal } from '../components/SensorModal'
-import workout1 from '../constants/workout1.json'
+import { ViewWorkoutModal } from '../components/ViewWorkoutModal'
+import useCyclingDataStore from '../store/useCyclingDataStore'
 import useWorkoutStore from '../store/useWorkoutStore'
 
-const workouts = [
-  { title: 'Hold 200 W for 2 minutes', duration: '2:00' },
-  { title: 'Sprint 400 W for 30 sec', duration: '0:30' },
-  { title: 'Recovery Ride at 100 W', duration: '5:00' },
-  { title: 'Hill Climb Simulation', duration: '3:00' },
-  { title: 'Cadence Drill at 90 RPM', duration: '4:00' },
-  { title: 'Tempo Ride at 180 W', duration: '10:00' },
-  { title: 'Endurance Block', duration: '20:00' },
-  { title: 'VO2 Max Burst', duration: '1:00' },
-  { title: 'Warm Up', duration: '5:00' },
-  { title: 'Cool Down', duration: '5:00' }
-]
+// Step shape based on your example
+type Step = {
+  ftp_percent: number | null
+  duration: number // seconds
+  rpm: number | null
+  progressive_range: { from: number; to: number } | null
+}
+
+// One workout per file
+type WorkoutItem = {
+  id: string // slug from filename (e.g. "workout1")
+  title: string // humanized from filename (e.g. "Workout 1")
+  durationLabel: string // computed MM:SS
+  steps: Step[] // the JSON array
+}
+
+function secondsToClock(total: number): string {
+  const m = Math.floor(total / 60)
+  const s = total % 60
+  return `${String(m).padStart(1, '0')}:${String(s).padStart(2, '0')}`
+}
+
+function humanizeFileName(fileName: string): string {
+  const base = fileName.replace(/\.json$/i, '')
+  // replace separators with spaces and title-case
+  return base.replace(/[-_]+/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
+}
 
 export default function WorkoutSelector() {
-  const { selectedWorkout, setWorkout } = useWorkoutStore()
-  const [filteredWorkouts, setFilteredWorkouts] = useState(workouts)
+  const { setWorkout } = useWorkoutStore()
+  const [allWorkouts, setAllWorkouts] = useState<WorkoutItem[]>([])
+  const [filteredWorkouts, setFilteredWorkouts] = useState<WorkoutItem[]>([])
   const [loadingIndex, setLoadingIndex] = useState<number | null>(null)
-  const [openModal, setOpenModal] = useState<boolean>(false)
+  const [openSensorModal, setOpenSensorModal] = useState(false)
+  const [openViewWorkoutModal, setOpenViewWorkoutModal] = useState(false)
+  const [openFTPModal, setOpenFTPModal] = useState(false)
+  const [viewWorkout, setViewWorkout] = useState<WorkoutItem | null>(null)
+
+  const userFTP = useCyclingDataStore((s) => s.userFTP)
+
   const navigate = useNavigate()
 
-  const handleWorkoutSelect = (workout: object, index: number) => {
-    console.log('Selected workout:', workout)
+  // Load all workouts from src/constants/*.json
+  useEffect(() => {
+    const modules = import.meta.glob('../constants/*.json', { eager: true })
+
+    const items: WorkoutItem[] = Object.entries(modules).map(([path, mod]) => {
+      // Vite eager JSON modules expose the value on `default`
+      const maybeModule = mod as any
+      const steps: Step[] = Array.isArray(maybeModule?.default)
+        ? maybeModule.default
+        : Array.isArray(maybeModule)
+        ? maybeModule
+        : []
+
+      const fileName = path.split('/').pop() || 'workout'
+      const id = fileName.replace(/\.json$/i, '')
+      const title = humanizeFileName(fileName)
+
+      const totalSeconds = steps.reduce((acc, s) => acc + (s?.duration ?? 0), 0)
+
+      return {
+        id,
+        title,
+        durationLabel: secondsToClock(totalSeconds),
+        steps
+      }
+    })
+
+    // Keep only valid arrays
+    const valid = items.filter(
+      (w) => Array.isArray(w.steps) && w.steps.length > 0
+    )
+
+    // Sort for stability
+    valid.sort((a, b) => a.title.localeCompare(b.title))
+
+    setAllWorkouts(valid)
+    setFilteredWorkouts(valid)
+  }, [])
+
+  const workoutTitles = useMemo(
+    () => filteredWorkouts.map((w) => w.title),
+    [filteredWorkouts]
+  )
+
+  const handleSearch = (_: unknown, value: string) => {
+    const v = value.trim().toLowerCase()
+    if (!v) {
+      setFilteredWorkouts(allWorkouts)
+      return
+    }
+    const filtered = allWorkouts.filter(
+      (w) => w.title.toLowerCase().includes(v) || w.id.toLowerCase().includes(v)
+    )
+    setFilteredWorkouts(filtered.length ? filtered : allWorkouts)
+  }
+
+  const handleStartWorkout = (workout: WorkoutItem, index: number) => {
     setLoadingIndex(index)
-    setWorkout(workout1) // or workout1.steps
+    // Your store expects the steps array (your JSON shape)
+    setWorkout(workout.steps)
 
     setTimeout(() => {
       setLoadingIndex(null)
       navigate('/home')
-    }, 3000)
+    }, 600)
+  }
+
+  const handleViewWorkout = (workout: WorkoutItem) => {
+    setViewWorkout(workout)
+    setOpenViewWorkoutModal(true)
   }
 
   return (
@@ -73,45 +158,55 @@ export default function WorkoutSelector() {
             py: 2,
             display: 'flex',
             alignItems: 'center',
+            gap: 2,
             justifyContent: 'space-between',
             borderBottom: '1px solid',
             borderColor: 'divider'
           }}
         >
           <Typography level='h4'>Select Workout</Typography>
+
           <Autocomplete
-            options={workouts.map((w) => w.title)}
+            options={workoutTitles}
             placeholder='Search workouts...'
-            onInputChange={(event, value) => {
-              const filtered = workouts.filter((w) =>
-                w.title.toLowerCase().includes(value.toLowerCase())
-              )
-              setFilteredWorkouts(filtered.length ? filtered : workouts)
-            }}
+            onInputChange={handleSearch}
             sx={{ width: '50%' }}
             startDecorator={<SearchIcon />}
             variant='outlined'
+            freeSolo
           />
+
           <IconButton
-            disabled={false}
             variant='solid'
             color='primary'
             size='lg'
-            onClick={() => setOpenModal(true)}
+            onClick={() => setOpenFTPModal(true)}
+          >
+            {userFTP ? userFTP : 'SET'} FTP
+          </IconButton>
+
+          <FTPModal
+            open={openFTPModal}
+            onClose={() => setOpenFTPModal(false)}
+          />
+
+          <IconButton
+            variant='solid'
+            color='primary'
+            size='lg'
+            onClick={() => setOpenSensorModal(true)}
           >
             <Sensors />
           </IconButton>
-          <SensorModal open={openModal} onClose={() => setOpenModal(false)} />
+
+          <SensorModal
+            open={openSensorModal}
+            onClose={() => setOpenSensorModal(false)}
+          />
         </Sheet>
 
-        {/* Grid section */}
-        <Box
-          sx={{
-            flex: 1,
-            p: { xs: 2, sm: 3 },
-            width: '100%'
-          }}
-        >
+        {/* Grid */}
+        <Box sx={{ flex: 1, p: { xs: 2, sm: 3 }, width: '100%' }}>
           <Box
             sx={{
               display: 'grid',
@@ -122,26 +217,20 @@ export default function WorkoutSelector() {
                 lg: 'repeat(4, 1fr)',
                 xl: 'repeat(5, 1fr)'
               },
-              gap: 3,
-              width: '100%',
-              height: '100%'
+              gap: 3
             }}
           >
             {filteredWorkouts.map((workout, index) => (
               <Card
-                key={index}
+                key={workout.id}
                 size='lg'
                 variant='outlined'
                 sx={{
                   display: 'flex',
                   flexDirection: 'column',
                   justifyContent: 'space-between',
-                  height: '100%',
                   transition: 'transform 0.2s',
-                  '&:hover': {
-                    transform: 'scale(1.02)',
-                    boxShadow: 'lg'
-                  }
+                  '&:hover': { transform: 'scale(1.02)', boxShadow: 'lg' }
                 }}
               >
                 <CardContent>
@@ -149,27 +238,25 @@ export default function WorkoutSelector() {
                     {workout.title}
                   </Typography>
                   <Typography level='body-sm' color='neutral'>
-                    Duration: {workout.duration}
+                    Duration: {workout.durationLabel}
                   </Typography>
                 </CardContent>
+
                 <Box sx={{ p: 2, pt: 0 }}>
                   <Button
-                    key={index}
                     fullWidth
                     variant='outlined'
-                    loading={loadingIndex === index}
-                    onClick={() => alert(`Selected: ${workout.title}`)}
+                    onClick={() => handleViewWorkout(workout)}
                     sx={{ mb: 1 }}
                   >
                     View Workout
                   </Button>
                   <Button
-                    key={index}
                     fullWidth
                     variant='solid'
                     color='success'
                     loading={loadingIndex === index}
-                    onClick={() => handleWorkoutSelect(workout, index)}
+                    onClick={() => handleStartWorkout(workout, index)}
                   >
                     Start
                   </Button>
@@ -179,6 +266,14 @@ export default function WorkoutSelector() {
           </Box>
         </Box>
       </Box>
+
+      {/* Single modal instance bound to the selected workout */}
+      <ViewWorkoutModal
+        open={openViewWorkoutModal}
+        onClose={() => setOpenViewWorkoutModal(false)}
+        title={viewWorkout?.title ?? ''}
+        steps={viewWorkout?.steps ?? []}
+      />
     </CssVarsProvider>
   )
 }
