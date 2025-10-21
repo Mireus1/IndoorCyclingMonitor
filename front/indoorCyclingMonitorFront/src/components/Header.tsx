@@ -15,7 +15,6 @@ import Tooltip from '@mui/joy/Tooltip'
 import Typography from '@mui/joy/Typography'
 import * as React from 'react'
 
-import BookRoundedIcon from '@mui/icons-material/BookRounded'
 import DarkModeRoundedIcon from '@mui/icons-material/DarkModeRounded'
 import HelpRoundedIcon from '@mui/icons-material/HelpRounded'
 import LanguageRoundedIcon from '@mui/icons-material/LanguageRounded'
@@ -23,6 +22,8 @@ import LightModeRoundedIcon from '@mui/icons-material/LightModeRounded'
 import LogoutRoundedIcon from '@mui/icons-material/LogoutRounded'
 import MenuRoundedIcon from '@mui/icons-material/MenuRounded'
 import SettingsRoundedIcon from '@mui/icons-material/SettingsRounded'
+
+import { useNavigate } from 'react-router-dom'
 
 import Navigation from './Navigation'
 
@@ -59,6 +60,7 @@ function ColorSchemeToggle() {
 
 export default function Header() {
   const [open, setOpen] = React.useState(false)
+  const navigate = useNavigate()
   return (
     <Box sx={{ display: 'flex', flexGrow: 1, justifyContent: 'space-between' }}>
       <Stack
@@ -74,6 +76,7 @@ export default function Header() {
           size='md'
           variant='outlined'
           color='neutral'
+          onClick={() => navigate('/select')}
           sx={{
             display: { xs: 'none', sm: 'inline-flex' },
             borderRadius: '50%'
@@ -110,18 +113,6 @@ export default function Header() {
           alignItems: 'center'
         }}
       >
-        <Tooltip title='Joy UI overview' variant='outlined'>
-          <IconButton
-            size='sm'
-            variant='plain'
-            color='neutral'
-            component='a'
-            href='/blog/first-look-at-joy/'
-            sx={{ alignSelf: 'center' }}
-          >
-            <BookRoundedIcon />
-          </IconButton>
-        </Tooltip>
         <ColorSchemeToggle />
         <Dropdown>
           <MenuButton
