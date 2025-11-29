@@ -1,0 +1,21 @@
+# ruff.toml
+
+include = ["src", "tests"]
+exclude = ["build", "dist", ".venv"]
+
+target-version = "py312"
+
+lint.select = [
+    "E",   # pycodestyle errors
+    "F",   # pyflakes
+    "W",   # pycodestyle warnings
+    "I",   # isort formatting
+    "B",   # flake8-bugbear
+    "UP",  # pyupgrade
+]
+
+lint.ignore = [
+    "E501",  # line too long
+]
+
+format = { quote-style = "double", indent-style = "space" }
