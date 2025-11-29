@@ -16,6 +16,9 @@ interface Sensor {
   pretty: string // human‐friendly, e.g. "PowerMeter:7504"
 }
 
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL ?? 'http://127.0.0.1:8000'
+
 export function SensorModal({
   open,
   onClose
@@ -32,7 +35,7 @@ export function SensorModal({
   useEffect(() => {
     if (!open) return
     setLoading(true)
-    fetch('http://127.0.0.1:8000/sensors')
+    fetch(`${API_BASE_URL}/sensors`)
       .then((res) => res.json())
       .then((data: Sensor[]) => setSensors(data))
       .catch(console.error)
@@ -41,14 +44,9 @@ export function SensorModal({
 
   const handleConnect = (sensor: Sensor) => {
     setConnecting(sensor.name)
-    fetch(
-      `http://127.0.0.1:8000/sensors/${encodeURIComponent(
-        sensor.name
-      )}/connect`,
-      {
-        method: 'POST'
-      }
-    )
+    fetch(`${API_BASE_URL}/sensors/${encodeURIComponent(sensor.name)}/connect`, {
+      method: 'POST'
+    })
       .then((res) => {
         console.log(res)
         if (!res.ok) throw new Error('Connect failed')
