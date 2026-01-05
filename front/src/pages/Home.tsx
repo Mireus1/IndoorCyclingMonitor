@@ -254,20 +254,18 @@ export default function Home() {
     if (ergCommandRef.current === commandKey) return
     ergCommandRef.current = commandKey
 
-    const controller = new AbortController()
-
-    const path = `${API_BASE_URL}/sensors/${encodeURIComponent(
-      'FitnessEquipment_5_7504'
-    )}/erg/${target}`
-
-    fetch(path, {
-      method: 'POST',
-      signal: controller.signal
-    }).catch((error) => {
-      console.error('Failed to update ERG target', error)
-    })
-
-    return () => controller.abort()
+    // Temporarily disable ERG API calls until the endpoint is stable.
+    // const controller = new AbortController()
+    // const path = `${API_BASE_URL}/sensors/${encodeURIComponent(
+    //   'FitnessEquipment_5_7504'
+    // )}/erg/${target}`
+    // fetch(path, {
+    //   method: 'POST',
+    //   signal: controller.signal
+    // }).catch((error) => {
+    //   console.error('Failed to update ERG target', error)
+    // })
+    // return () => controller.abort()
   }, [
     trainerSensorName,
     shouldControlErg,
@@ -367,6 +365,7 @@ export default function Home() {
 
         <Layout.Main>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+            <StatCardGrid stats={statsData} />
             <Box
               sx={{
                 display: 'grid',
@@ -498,7 +497,11 @@ export default function Home() {
                       sx={{
                         fontWeight: 700,
                         letterSpacing: -0.8,
-                        fontSize: { xs: '2.75rem', sm: '3.25rem', md: '3.75rem' },
+                        fontSize: {
+                          xs: '2.75rem',
+                          sm: '3.25rem',
+                          md: '3.75rem'
+                        },
                         lineHeight: 1
                       }}
                     >
@@ -584,8 +587,6 @@ export default function Home() {
                 </Typography>
               )}
             </Card>
-
-            <StatCardGrid stats={statsData} />
           </Box>
         </Layout.Main>
       </Layout.Root>
