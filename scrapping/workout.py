@@ -38,12 +38,15 @@ class Workout:
 
     def _parse(self):
         progressive_pattern = re.compile(
-            r'(?P<duration>\d+(?:min|sec)) from (?P<from_ftp>\d+)\s*to\s*(?P<to_ftp>\d+)% FTP',
+            r'(?P<duration>\d+(?:min|sec))\s+from\s+'
+            r'(?P<from_ftp>\d+)\s*to\s*(?P<to_ftp>\d+)\s*%\s*FTP',
             re.IGNORECASE
         )
 
         step_pattern = re.compile(
-            r'(?P<ftp>\d+)% FTP(?P<duration>\d+(?:min|sec))(?:\s*@\s*(?P<rpm>\d+)rpm)?',
+            r'(?P<duration>\d+(?:min|sec))\s*'
+            r'(?:@\s*(?P<rpm>\d+)\s*rpm)?\s*,?\s*'
+            r'(?P<ftp>\d+)\s*%\s*FTP',
             re.IGNORECASE
         )
 
