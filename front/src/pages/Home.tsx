@@ -493,7 +493,17 @@ export default function Home() {
                       {describePowerTarget(safeStep)} ·{' '}
                       {describeCadenceTarget(safeStep)}
                     </Typography>
-                    <Typography level='display-xs'>{targetW} W</Typography>
+                    <Typography
+                      level='display-sm'
+                      sx={{
+                        fontWeight: 700,
+                        letterSpacing: -0.8,
+                        fontSize: { xs: '2.75rem', sm: '3.25rem', md: '3.75rem' },
+                        lineHeight: 1
+                      }}
+                    >
+                      {targetW} W
+                    </Typography>
                     <Typography level='body-sm' textColor='text.tertiary'>
                       Time left {formatSecondsToMinutes(timeLeft)}
                     </Typography>
