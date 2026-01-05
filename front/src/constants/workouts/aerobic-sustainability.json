@@ -1,0 +1,50 @@
+[
+  {
+    "ftp_percent": 95,
+    "duration": 30,
+    "rpm": 105,
+    "progressive_range": null
+  },
+  {
+    "ftp_percent": 80,
+    "duration": 30,
+    "rpm": 90,
+    "progressive_range": null
+  },
+  {
+    "ftp_percent": 50,
+    "duration": 180,
+    "rpm": 85,
+    "progressive_range": null
+  },
+  {
+    "ftp_percent": 95,
+    "duration": 30,
+    "rpm": 70,
+    "progressive_range": null
+  },
+  {
+    "ftp_percent": 80,
+    "duration": 30,
+    "rpm": 90,
+    "progressive_range": null
+  },
+  {
+    "ftp_percent": 50,
+    "duration": 180,
+    "rpm": 85,
+    "progressive_range": null
+  },
+  {
+    "ftp_percent": 95,
+    "duration": 30,
+    "rpm": 105,
+    "progressive_range": null
+  },
+  {
+    "ftp_percent": 80,
+    "duration": 30,
+    "rpm": 75,
+    "progressive_range": null
+  }
+]

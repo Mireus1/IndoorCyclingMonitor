@@ -1,0 +1,74 @@
+[
+  {
+    "ftp_percent": null,
+    "duration": 420,
+    "rpm": null,
+    "progressive_range": {
+      "from": 44,
+      "to": 75
+    }
+  },
+  {
+    "ftp_percent": null,
+    "duration": 300,
+    "rpm": null,
+    "progressive_range": {
+      "from": 75,
+      "to": 90
+    }
+  },
+  {
+    "ftp_percent": null,
+    "duration": 300,
+    "rpm": null,
+    "progressive_range": {
+      "from": 75,
+      "to": 90
+    }
+  },
+  {
+    "ftp_percent": null,
+    "duration": 300,
+    "rpm": null,
+    "progressive_range": {
+      "from": 75,
+      "to": 90
+    }
+  },
+  {
+    "ftp_percent": null,
+    "duration": 300,
+    "rpm": null,
+    "progressive_range": {
+      "from": 75,
+      "to": 90
+    }
+  },
+  {
+    "ftp_percent": null,
+    "duration": 300,
+    "rpm": null,
+    "progressive_range": {
+      "from": 75,
+      "to": 90
+    }
+  },
+  {
+    "ftp_percent": null,
+    "duration": 300,
+    "rpm": null,
+    "progressive_range": {
+      "from": 75,
+      "to": 90
+    }
+  },
+  {
+    "ftp_percent": null,
+    "duration": 300,
+    "rpm": null,
+    "progressive_range": {
+      "from": 55,
+      "to": 25
+    }
+  }
+]

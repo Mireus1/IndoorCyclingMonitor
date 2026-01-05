@@ -1,0 +1,20 @@
+[
+  {
+    "ftp_percent": null,
+    "duration": 600,
+    "rpm": null,
+    "progressive_range": {
+      "from": 45,
+      "to": 65
+    }
+  },
+  {
+    "ftp_percent": null,
+    "duration": 480,
+    "rpm": null,
+    "progressive_range": {
+      "from": 55,
+      "to": 45
+    }
+  }
+]
