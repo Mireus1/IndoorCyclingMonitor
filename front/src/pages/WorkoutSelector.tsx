@@ -64,7 +64,9 @@ export default function WorkoutSelector() {
 
   // Load all workouts from src/constants/*.json
   useEffect(() => {
-    const modules = import.meta.glob('../constants/*.json', { eager: true })
+    const modules = import.meta.glob('../constants/workouts/*.json', {
+      eager: true
+    })
 
     const items: WorkoutItem[] = Object.entries(modules).map(([path, mod]) => {
       // Vite eager JSON modules expose the value on `default`
