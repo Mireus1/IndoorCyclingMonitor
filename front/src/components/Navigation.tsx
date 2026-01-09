@@ -7,6 +7,7 @@ import ListItem from '@mui/joy/ListItem'
 import Typography from '@mui/joy/Typography'
 import { useEffect, useRef } from 'react'
 import { Step } from '../entities/Step'
+import useCyclingDataStore from '../store/useCyclingDataStore'
 
 interface WorkoutListProps {
   workoutData: Step[]
@@ -21,12 +22,17 @@ const formatTime = (seconds: number) => {
   return `${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`
 }
 
+const wattsFromPercent = (percent: number, ftp: number) =>
+  Math.round((percent / 100) * ftp)
+
 export default function WorkoutList({
   workoutData,
   currentStep,
   currentStepIndex
 }: WorkoutListProps) {
   const itemRefs = useRef<(HTMLLIElement | null)[]>([])
+  const userFTP = useCyclingDataStore((s) => s.userFTP)
+  const hasUserFtp = userFTP != null && Number.isFinite(userFTP)
 
   useEffect(() => {
     const activeRef = itemRefs.current[currentStepIndex]
@@ -56,6 +62,7 @@ export default function WorkoutList({
           const isProgressive =
             interval.progressive_range !== null &&
             interval.progressive_range !== undefined
+          const ftpValue = hasUserFtp ? userFTP! : null
 
           return (
             <ListItem
@@ -86,7 +93,11 @@ export default function WorkoutList({
                 {isPowerTarget && (
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     <FlashOnIcon fontSize='small' />
-                    <Typography>{interval.ftp_percent} % FTP</Typography>
+                    <Typography>
+                      {ftpValue
+                        ? `${wattsFromPercent(interval.ftp_percent!, ftpValue)} W`
+                        : `${interval.ftp_percent} % FTP`}
+                    </Typography>
                   </Box>
                 )}
 
@@ -94,8 +105,15 @@ export default function WorkoutList({
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     <FlashOnIcon fontSize='small' />
                     <Typography>
-                      Progressive {interval.progressive_range.from} →{' '}
-                      {interval.progressive_range.to} rpm
+                      {ftpValue
+                        ? `Progressive ${wattsFromPercent(
+                            interval.progressive_range!.from,
+                            ftpValue
+                          )} → ${wattsFromPercent(
+                            interval.progressive_range!.to,
+                            ftpValue
+                          )} W`
+                        : `Progressive ${interval.progressive_range!.from} → ${interval.progressive_range!.to} % FTP`}
                     </Typography>
                   </Box>
                 )}
