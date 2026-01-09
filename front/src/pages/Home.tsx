@@ -156,6 +156,10 @@ export default function Home() {
   const safeStep: Step | null = currentStep ?? workoutSteps[0] ?? null
   const targetW = safeStep ? getFtpTarget(safeStep, 250, timeLeft) : 0
   const zoneColor = safeStep ? getPowerZoneColor(targetW, 250) : 'neutral'
+  const zoneSoftBg = `var(--joy-palette-${zoneColor}-softBg)`
+  const zoneSolidBg = `var(--joy-palette-${zoneColor}-solidBg)`
+  const zoneSolidColor = `var(--joy-palette-${zoneColor}-solidColor)`
+  const zoneOutlinedBorder = `var(--joy-palette-${zoneColor}-outlinedBorder)`
 
   const primaryButton = (() => {
     if (isFinished) {
@@ -412,7 +416,7 @@ export default function Home() {
                 <LinearProgress
                   determinate
                   value={workoutProgressValue}
-                  sx={{ borderRadius: 999 }}
+                  sx={{ borderRadius: 999, maxHeight: 15 }}
                   color='primary'
                 />
                 <Box
@@ -465,9 +469,24 @@ export default function Home() {
                 variant='outlined'
                 sx={{
                   p: { xs: 2, md: 3 },
+                  pl: { xs: 2.75, md: 3.75 },
                   display: 'flex',
                   flexDirection: 'column',
-                  gap: 2
+                  gap: 2.5,
+                  position: 'relative',
+                  overflow: 'hidden',
+                  borderWidth: 2,
+                  background:
+                    'linear-gradient(180deg, var(--joy-palette-background-level1), var(--joy-palette-background-body))',
+                  '&::before': {
+                    content: '""',
+                    position: 'absolute',
+                    top: 0,
+                    bottom: 0,
+                    left: 0,
+                    width: '6px',
+                    backgroundColor: zoneSolidBg
+                  }
                 }}
               >
                 <Box
@@ -478,7 +497,12 @@ export default function Home() {
                   }}
                 >
                   <Typography level='h4'>Current interval</Typography>
-                  <Chip size='sm' color={zoneColor as any} variant='soft'>
+                  <Chip
+                    size='md'
+                    color={zoneColor as any}
+                    variant='solid'
+                    sx={{ fontWeight: 600 }}
+                  >
                     {isFinished ? 'Done' : `Step ${stepCounter}`}
                   </Chip>
                 </Box>
@@ -488,28 +512,66 @@ export default function Home() {
                   </Typography>
                 ) : safeStep ? (
                   <>
-                    <Typography level='body-md' textColor='text.tertiary'>
+                    <Typography
+                      level='body-sm'
+                      textColor='text.secondary'
+                      sx={{ fontWeight: 600 }}
+                    >
                       {describePowerTarget(safeStep)} ·{' '}
                       {describeCadenceTarget(safeStep)}
                     </Typography>
-                    <Typography
-                      level='display-sm'
+                    <Box
                       sx={{
-                        fontWeight: 700,
-                        letterSpacing: -0.8,
-                        fontSize: {
-                          xs: '2.75rem',
-                          sm: '3.25rem',
-                          md: '3.75rem'
+                        display: 'grid',
+                        gridTemplateColumns: {
+                          xs: '1fr',
+                          sm: 'auto 1fr'
                         },
-                        lineHeight: 1
+                        alignItems: 'center',
+                        gap: 2
                       }}
                     >
-                      {targetW} W
-                    </Typography>
-                    <Typography level='body-sm' textColor='text.tertiary'>
-                      Time left {formatSecondsToMinutes(timeLeft)}
-                    </Typography>
+                      <Box
+                        sx={{
+                          p: 1.5,
+                          borderRadius: '14px',
+                          backgroundColor: zoneSoftBg,
+                          border: '1px solid',
+                          borderColor: zoneOutlinedBorder
+                        }}
+                      >
+                        <Typography
+                          level='display-md'
+                          sx={{
+                            fontWeight: 700,
+                            letterSpacing: -1,
+                            fontSize: {
+                              xs: '3rem',
+                              sm: '3.75rem',
+                              md: '4.25rem'
+                            },
+                            lineHeight: 1,
+                            color: zoneSolidColor
+                          }}
+                        >
+                          {targetW} W
+                        </Typography>
+                        <Typography level='body-xs' textColor='text.tertiary'>
+                          Target power
+                        </Typography>
+                      </Box>
+                      <Box>
+                        <Typography level='body-xs' textColor='text.tertiary'>
+                          Time left
+                        </Typography>
+                        <Typography
+                          level='h2'
+                          sx={{ fontWeight: 700, letterSpacing: -0.5 }}
+                        >
+                          {formatSecondsToMinutes(timeLeft)}
+                        </Typography>
+                      </Box>
+                    </Box>
                     <LinearProgress
                       determinate
                       value={stepProgressValue}
@@ -520,24 +582,37 @@ export default function Home() {
                       sx={{
                         display: 'grid',
                         gridTemplateColumns: {
-                          xs: 'repeat(2, minmax(0, 1fr))'
+                          xs: '1fr',
+                          sm: 'repeat(2, minmax(0, 1fr))'
                         },
                         gap: 2
                       }}
                     >
-                      <Box>
+                      <Box
+                        sx={{
+                          p: 1.25,
+                          borderRadius: '12px',
+                          backgroundColor: 'background.level1'
+                        }}
+                      >
                         <Typography level='body-xs' textColor='text.tertiary'>
                           Cadence target
                         </Typography>
-                        <Typography level='title-lg'>
+                        <Typography level='title-lg' sx={{ fontWeight: 600 }}>
                           {describeCadenceTarget(safeStep)}
                         </Typography>
                       </Box>
-                      <Box>
+                      <Box
+                        sx={{
+                          p: 1.25,
+                          borderRadius: '12px',
+                          backgroundColor: 'background.level1'
+                        }}
+                      >
                         <Typography level='body-xs' textColor='text.tertiary'>
                           Interval duration
                         </Typography>
-                        <Typography level='title-lg'>
+                        <Typography level='title-lg' sx={{ fontWeight: 600 }}>
                           {formatSecondsToMinutes(safeStep.duration)}
                         </Typography>
                       </Box>
@@ -550,36 +625,95 @@ export default function Home() {
                 )}
               </Card>
             </Box>
-
             <Card
               variant='soft'
-              sx={{ p: { xs: 2, md: 3 }, borderRadius: '16px' }}
+              sx={{
+                p: { xs: 2, md: 3 },
+                borderRadius: '18px',
+                border: '1px solid',
+                borderColor: 'primary.outlinedBorder',
+                background:
+                  'linear-gradient(135deg, var(--joy-palette-primary-softBg), var(--joy-palette-background-level1))'
+              }}
             >
-              <Typography level='h4' sx={{ mb: 1 }}>
-                Up next
-              </Typography>
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  flexWrap: 'wrap',
+                  gap: 1,
+                  mb: 1.5
+                }}
+              >
+                <Chip
+                  size='md'
+                  variant='solid'
+                  color='primary'
+                  sx={{ fontWeight: 700, letterSpacing: 0.6 }}
+                >
+                  Up next
+                </Chip>
+                {nextStepCounter && (
+                  <Chip size='md' variant='soft' color='neutral'>
+                    Step {nextStepCounter}
+                  </Chip>
+                )}
+              </Box>
               {nextStep ? (
                 <Box
-                  sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}
+                  sx={{
+                    display: 'grid',
+                    gridTemplateColumns: {
+                      xs: '1fr',
+                      sm: '1fr auto'
+                    },
+                    gap: 2,
+                    alignItems: 'center'
+                  }}
                 >
-                  <Typography level='title-lg'>
-                    {describePowerTarget(nextStep)}
-                  </Typography>
-                  <Typography level='body-sm' textColor='text.tertiary'>
-                    Duration {formatSecondsToMinutes(nextStep.duration)} ·{' '}
-                    {describeCadenceTarget(nextStep)}
-                  </Typography>
-                  <Typography level='h3'>{nextTargetW} W</Typography>
-                  {nextStepCounter && (
-                    <Chip
-                      size='sm'
-                      variant='outlined'
-                      color='neutral'
-                      sx={{ width: 'fit-content' }}
+                  <Box
+                    sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}
+                  >
+                    <Typography level='title-lg' sx={{ fontWeight: 700 }}>
+                      {describePowerTarget(nextStep)}
+                    </Typography>
+                    <Typography level='body-sm' textColor='text.tertiary'>
+                      Duration {formatSecondsToMinutes(nextStep.duration)}
+                    </Typography>
+                    <Typography level='body-sm' textColor='text.tertiary'>
+                      {describeCadenceTarget(nextStep)}
+                    </Typography>
+                  </Box>
+                  <Box
+                    sx={{
+                      p: 1.5,
+                      borderRadius: '14px',
+                      backgroundColor: 'var(--joy-palette-primary-softBg)',
+                      border: '1px solid',
+                      borderColor: 'primary.outlinedBorder',
+                      textAlign: { xs: 'left', sm: 'right' }
+                    }}
+                  >
+                    <Typography
+                      level='display-sm'
+                      sx={{
+                        fontWeight: 700,
+                        letterSpacing: -0.8,
+                        fontSize: {
+                          xs: '2.5rem',
+                          sm: '3rem',
+                          md: '3.5rem'
+                        },
+                        lineHeight: 1
+                      }}
                     >
-                      Step {nextStepCounter}
-                    </Chip>
-                  )}
+                      {nextTargetW} W
+                    </Typography>
+                    <Typography level='body-xs' textColor='text.tertiary'>
+                      Target power
+                    </Typography>
+                  </Box>
                 </Box>
               ) : (
                 <Typography level='body-md' textColor='text.tertiary'>
