@@ -30,6 +30,7 @@ export default function Home() {
     power,
     heartRate,
     cadence,
+    userFTP,
     trainerSensorName,
     setCyclingData,
     setTrainerSensorName
@@ -141,9 +142,8 @@ export default function Home() {
 
   const timeRemaining = Math.max(totalDuration - elapsedTime, 0)
   const nextStep = workoutSteps[currentStepIndex + 1] ?? null
-  const nextTargetW = nextStep
-    ? getFtpTarget(nextStep, 250, nextStep.duration)
-    : 0
+  const ftpBase = userFTP ?? 250
+  const nextTargetW = nextStep ? getFtpTarget(nextStep, ftpBase, nextStep.duration) : 0
   const workoutProgressValue = Number.isFinite(workoutProgress)
     ? Math.min(Math.max(workoutProgress ?? 0, 0), 100)
     : 0
@@ -154,8 +154,8 @@ export default function Home() {
 
   // Guard for when currentStep might be undefined momentarily
   const safeStep: Step | null = currentStep ?? workoutSteps[0] ?? null
-  const targetW = safeStep ? getFtpTarget(safeStep, 250, timeLeft) : 0
-  const zoneColor = safeStep ? getPowerZoneColor(targetW, 250) : 'neutral'
+  const targetW = safeStep ? getFtpTarget(safeStep, ftpBase, timeLeft) : 0
+  const zoneColor = safeStep ? getPowerZoneColor(targetW, ftpBase) : 'neutral'
   const zoneSoftBg = `var(--joy-palette-${zoneColor}-softBg)`
   const zoneSolidBg = `var(--joy-palette-${zoneColor}-solidBg)`
   const zoneSolidColor = `var(--joy-palette-${zoneColor}-solidColor)`
