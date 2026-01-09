@@ -1,8 +1,18 @@
 # IndoorCyclingMonitor
 
-IndoorCyclingMonitor is a home-trainer software tool designed to track, visualize, and enhance your indoor cycling sessions. It connects to compatible sensors to monitor power, cadence, speed, and heart rate in real time, providing clear insights into your performance.
-With an intuitive interface, structured workout support, and detailed ride analytics, IndoorCyclingMonitor helps cyclists train smarter and stay motivated—right from home.
+Indoor cycling monitor using ANT+ and Streamlit for GUI
 
-Made using : 
-- React.JS - TailwindCSS
-- Python - FastAPI, OpenANT+
+## Run locally
+
+Prereqs (install once):
+
+- Python 3.12 + pipenv: `cd back && pipenv install`
+- Node.js + npm: `cd front && npm install`
+
+Then start both backend (FastAPI) and frontend (Vite) with one command from the repo root:
+
+```bash
+./dev.sh
+```
+
+Backend runs on http://127.0.0.1:8000 (FastAPI docs at `/docs`) and frontend on http://localhost:5173. Hit Ctrl+C to stop both.

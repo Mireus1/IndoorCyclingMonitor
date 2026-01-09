@@ -1,0 +1,194 @@
+[
+  {
+    "ftp_percent": null,
+    "duration": 600,
+    "rpm": null,
+    "progressive_range": {
+      "from": 40,
+      "to": 80
+    }
+  },
+  {
+    "ftp_percent": 90,
+    "duration": 30,
+    "rpm": 95,
+    "progressive_range": null
+  },
+  {
+    "ftp_percent": 55,
+    "duration": 30,
+    "rpm": 85,
+    "progressive_range": null
+  },
+  {
+    "ftp_percent": 100,
+    "duration": 30,
+    "rpm": 105,
+    "progressive_range": null
+  },
+  {
+    "ftp_percent": 55,
+    "duration": 30,
+    "rpm": 85,
+    "progressive_range": null
+  },
+  {
+    "ftp_percent": 110,
+    "duration": 30,
+    "rpm": 115,
+    "progressive_range": null
+  },
+  {
+    "ftp_percent": 55,
+    "duration": 30,
+    "rpm": 85,
+    "progressive_range": null
+  },
+  {
+    "ftp_percent": 55,
+    "duration": 120,
+    "rpm": 85,
+    "progressive_range": null
+  },
+  {
+    "ftp_percent": 115,
+    "duration": 180,
+    "rpm": 100,
+    "progressive_range": null
+  },
+  {
+    "ftp_percent": 65,
+    "duration": 180,
+    "rpm": 85,
+    "progressive_range": null
+  },
+  {
+    "ftp_percent": 55,
+    "duration": 300,
+    "rpm": 85,
+    "progressive_range": null
+  },
+  {
+    "ftp_percent": 100,
+    "duration": 60,
+    "rpm": 95,
+    "progressive_range": null
+  },
+  {
+    "ftp_percent": 75,
+    "duration": 60,
+    "rpm": 65,
+    "progressive_range": null
+  },
+  {
+    "ftp_percent": 55,
+    "duration": 300,
+    "rpm": 85,
+    "progressive_range": null
+  },
+  {
+    "ftp_percent": 85,
+    "duration": 300,
+    "rpm": 90,
+    "progressive_range": null
+  },
+  {
+    "ftp_percent": 100,
+    "duration": 60,
+    "rpm": 105,
+    "progressive_range": null
+  },
+  {
+    "ftp_percent": 85,
+    "duration": 300,
+    "rpm": 80,
+    "progressive_range": null
+  },
+  {
+    "ftp_percent": 100,
+    "duration": 60,
+    "rpm": 95,
+    "progressive_range": null
+  },
+  {
+    "ftp_percent": 85,
+    "duration": 300,
+    "rpm": 70,
+    "progressive_range": null
+  },
+  {
+    "ftp_percent": 100,
+    "duration": 60,
+    "rpm": 85,
+    "progressive_range": null
+  },
+  {
+    "ftp_percent": 85,
+    "duration": 60,
+    "rpm": 85,
+    "progressive_range": null
+  },
+  {
+    "ftp_percent": 85,
+    "duration": 60,
+    "rpm": 60,
+    "progressive_range": null
+  },
+  {
+    "ftp_percent": 85,
+    "duration": 60,
+    "rpm": 85,
+    "progressive_range": null
+  },
+  {
+    "ftp_percent": 85,
+    "duration": 60,
+    "rpm": 60,
+    "progressive_range": null
+  },
+  {
+    "ftp_percent": 85,
+    "duration": 60,
+    "rpm": 85,
+    "progressive_range": null
+  },
+  {
+    "ftp_percent": 100,
+    "duration": 60,
+    "rpm": 100,
+    "progressive_range": null
+  },
+  {
+    "ftp_percent": 85,
+    "duration": 300,
+    "rpm": 80,
+    "progressive_range": null
+  },
+  {
+    "ftp_percent": 100,
+    "duration": 60,
+    "rpm": 95,
+    "progressive_range": null
+  },
+  {
+    "ftp_percent": 85,
+    "duration": 300,
+    "rpm": 90,
+    "progressive_range": null
+  },
+  {
+    "ftp_percent": 100,
+    "duration": 60,
+    "rpm": 105,
+    "progressive_range": null
+  },
+  {
+    "ftp_percent": null,
+    "duration": 240,
+    "rpm": null,
+    "progressive_range": {
+      "from": 55,
+      "to": 25
+    }
+  }
+]
