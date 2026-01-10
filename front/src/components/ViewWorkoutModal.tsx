@@ -10,6 +10,7 @@ import {
 } from '@mui/joy'
 import * as React from 'react'
 import { Virtuoso } from 'react-virtuoso'
+import useCyclingDataStore from '../store/useCyclingDataStore'
 
 type ProgressiveRange = { from: number; to: number } | null
 
@@ -47,39 +48,8 @@ function zoneFor(ftpPercent: number) {
   return { label: 'Anaerobic', color: 'danger' as const }
 }
 
-function segmentStyle(
-  step: Step,
-  totalDuration: number,
-  idx: number,
-  lastIdx: number
-) {
-  const widthPct = (step.duration / totalDuration) * 100
-  const isFirst = idx === 0
-  const isLast = idx === lastIdx
-
-  const baseSx: any = {
-    width: `${Math.max(widthPct, 0.5)}%`, // prevent ultra-thin gaps
-    height: 16,
-    // use borders instead of inset boxShadow (cheaper to paint)
-    borderRight: isLast
-      ? 'none'
-      : '1px solid var(--joy-palette-neutral-outlinedBorder)'
-  }
-
-  if (step.progressive_range) {
-    baseSx.background =
-      'linear-gradient(90deg, var(--joy-palette-info-softBg), var(--joy-palette-warning-softBg))'
-  } else {
-    const ftp = step.ftp_percent ?? 0
-    const zone = zoneFor(ftp)
-    baseSx.bgcolor =
-      step.ftp_percent === null ? 'neutral.softBg' : `${zone.color}.solidBg`
-  }
-
-  if (isFirst) baseSx.borderRadius = '10px 0 0 10px'
-  if (isLast) baseSx.borderRadius = isFirst ? '10px' : '0 10px 10px 0'
-
-  return baseSx
+function wattsFromPercent(percent: number, ftp: number) {
+  return Math.round((percent / 100) * ftp)
 }
 
 export function ViewWorkoutModal({
@@ -93,6 +63,8 @@ export function ViewWorkoutModal({
   title?: string
   steps?: Step[]
 }) {
+  const userFTP = useCyclingDataStore((s) => s.userFTP)
+  const hasUserFtp = userFTP != null && Number.isFinite(userFTP)
   const total = React.useMemo(() => sumDurations(steps), [steps])
   const totalMins = Math.round(total / 60)
 
@@ -100,11 +72,26 @@ export function ViewWorkoutModal({
   const rows = React.useMemo(() => {
     return steps.map((s, i) => {
       const isProg = !!s.progressive_range
-      const intensityLabel = isProg
-        ? `${s.progressive_range!.from} → ${s.progressive_range!.to}%`
-        : s.ftp_percent !== null
-        ? `${s.ftp_percent}%`
-        : '—'
+      const intensityLabel = (() => {
+        if (isProg) {
+          const from = s.progressive_range!.from
+          const to = s.progressive_range!.to
+          if (hasUserFtp) {
+            return `${wattsFromPercent(from, userFTP!)} → ${wattsFromPercent(
+              to,
+              userFTP!
+            )} W`
+          }
+          return `${from} → ${to}% FTP`
+        }
+        if (s.ftp_percent !== null) {
+          if (hasUserFtp) {
+            return `${wattsFromPercent(s.ftp_percent, userFTP!)} W`
+          }
+          return `${s.ftp_percent}% FTP`
+        }
+        return '—'
+      })()
       const z = zoneFor(avgIntensity(s))
       const zoneLabel = isProg ? 'Progressive' : z.label
       const zoneColor = isProg ? 'success' : z.color
@@ -118,7 +105,7 @@ export function ViewWorkoutModal({
         zoneColor
       }
     })
-  }, [steps])
+  }, [steps, hasUserFtp, userFTP])
 
   return (
     <Modal
@@ -245,7 +232,7 @@ export function ViewWorkoutModal({
                   variant='soft'
                   color={row.isProg ? 'success' : 'neutral'}
                 >
-                  {row.intensityLabel} FTP
+                  {row.intensityLabel}
                 </Chip>
                 {row.rpm !== null ? (
                   <Chip size='sm' variant='outlined'>
