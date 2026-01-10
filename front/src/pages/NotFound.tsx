@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom'
+
 export default function NotFound() {
   return (
     <div
@@ -13,9 +15,9 @@ export default function NotFound() {
     >
       <h1>404</h1>
       <p>Page Not Found</p>
-      <a href='/home' className='mt-6 text-blue-500 hover:underline'>
-        Go to Home
-      </a>
+      <Link to='/select' className='mt-6 text-blue-500 hover:underline'>
+        Go to Select
+      </Link>
     </div>
   )
 }
