@@ -1,5 +1,8 @@
+import DeleteOutlineRoundedIcon from '@mui/icons-material/DeleteOutlineRounded'
 import SearchIcon from '@mui/icons-material/Search'
 import Sensors from '@mui/icons-material/Sensors'
+import StarBorderRoundedIcon from '@mui/icons-material/StarBorderRounded'
+import StarRoundedIcon from '@mui/icons-material/StarRounded'
 import {
   Autocomplete,
   Box,
@@ -8,6 +11,7 @@ import {
   CardContent,
   CssBaseline,
   Sheet,
+  Tooltip,
   Typography
 } from '@mui/joy'
 import IconButton from '@mui/joy/IconButton'
@@ -17,16 +21,11 @@ import { useNavigate } from 'react-router-dom'
 import { FTPModal } from '../components/FtpModal'
 import { SensorModal } from '../components/SensorModal'
 import { ViewWorkoutModal } from '../components/ViewWorkoutModal'
+import type { Step } from '../entities/step'
 import useCyclingDataStore from '../store/useCyclingDataStore'
 import useWorkoutStore from '../store/useWorkoutStore'
 
-// Step shape based on your example
-type Step = {
-  ftp_percent: number | null
-  duration: number // seconds
-  rpm: number | null
-  progressive_range: { from: number; to: number } | null
-}
+const FAVORITES_KEY = 'icm:favorites'
 
 // One workout per file
 type WorkoutItem = {
@@ -52,7 +51,10 @@ export default function WorkoutSelector() {
   const { setWorkout } = useWorkoutStore()
   const [allWorkouts, setAllWorkouts] = useState<WorkoutItem[]>([])
   const [filteredWorkouts, setFilteredWorkouts] = useState<WorkoutItem[]>([])
-  const [loadingIndex, setLoadingIndex] = useState<number | null>(null)
+  const [loadingId, setLoadingId] = useState<string | null>(null)
+  const [favorites, setFavorites] = useState<string[]>([])
+  const [canDeleteWorkouts, setCanDeleteWorkouts] = useState(false)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
   const [openSensorModal, setOpenSensorModal] = useState(false)
   const [openViewWorkoutModal, setOpenViewWorkoutModal] = useState(false)
   const [openFTPModal, setOpenFTPModal] = useState(false)
@@ -61,6 +63,42 @@ export default function WorkoutSelector() {
   const userFTP = useCyclingDataStore((s) => s.userFTP)
 
   const navigate = useNavigate()
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(FAVORITES_KEY)
+      if (raw) {
+        const parsed = JSON.parse(raw)
+        if (Array.isArray(parsed)) {
+          setFavorites(parsed.filter((id) => typeof id === 'string'))
+        }
+      }
+    } catch {
+      setFavorites([])
+    }
+  }, [])
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(FAVORITES_KEY, JSON.stringify(favorites))
+    } catch {
+      // ignore write errors (private mode, disabled storage)
+    }
+  }, [favorites])
+
+  useEffect(() => {
+    let isMounted = true
+    const checkDelete = async () => {
+      if (window.icm?.canDeleteWorkouts) {
+        const allowed = await window.icm.canDeleteWorkouts()
+        if (isMounted) setCanDeleteWorkouts(Boolean(allowed))
+      }
+    }
+    checkDelete()
+    return () => {
+      isMounted = false
+    }
+  }, [])
 
   // Load all workouts from src/constants/*.json
   useEffect(() => {
@@ -120,13 +158,13 @@ export default function WorkoutSelector() {
     setFilteredWorkouts(filtered.length ? filtered : allWorkouts)
   }
 
-  const handleStartWorkout = (workout: WorkoutItem, index: number) => {
-    setLoadingIndex(index)
+  const handleStartWorkout = (workout: WorkoutItem) => {
+    setLoadingId(workout.id)
     // Your store expects the steps array (your JSON shape)
     setWorkout(workout.steps)
 
     setTimeout(() => {
-      setLoadingIndex(null)
+      setLoadingId(null)
       navigate('/home')
     }, 600)
   }
@@ -135,6 +173,57 @@ export default function WorkoutSelector() {
     setViewWorkout(workout)
     setOpenViewWorkoutModal(true)
   }
+
+  const toggleFavorite = (workoutId: string) => {
+    setFavorites((prev) =>
+      prev.includes(workoutId)
+        ? prev.filter((id) => id !== workoutId)
+        : [...prev, workoutId]
+    )
+  }
+
+  const handleDeleteWorkout = async (workout: WorkoutItem) => {
+    if (!window.icm?.deleteWorkout) {
+      window.alert('Delete is only available in the desktop app.')
+      return
+    }
+    if (!canDeleteWorkouts) {
+      window.alert('Delete is disabled in packaged builds.')
+      return
+    }
+    const confirmDelete = window.confirm(
+      `Delete "${workout.title}"? This will remove the JSON file.`
+    )
+    if (!confirmDelete) return
+
+    setDeletingId(workout.id)
+    const result = await window.icm.deleteWorkout(workout.id)
+    setDeletingId(null)
+
+    if (!result?.ok) {
+      window.alert(`Failed to delete: ${result?.error ?? 'unknown error'}`)
+      return
+    }
+
+    setAllWorkouts((prev) => prev.filter((w) => w.id !== workout.id))
+    setFilteredWorkouts((prev) => prev.filter((w) => w.id !== workout.id))
+    setFavorites((prev) => prev.filter((id) => id !== workout.id))
+
+    if (viewWorkout?.id === workout.id) {
+      setOpenViewWorkoutModal(false)
+      setViewWorkout(null)
+    }
+  }
+
+  const sortedWorkouts = useMemo(() => {
+    const favoriteSet = new Set(favorites)
+    return [...filteredWorkouts].sort((a, b) => {
+      const aFav = favoriteSet.has(a.id) ? 0 : 1
+      const bFav = favoriteSet.has(b.id) ? 0 : 1
+      if (aFav !== bFav) return aFav - bFav
+      return a.title.localeCompare(b.title)
+    })
+  }, [favorites, filteredWorkouts])
 
   return (
     <CssVarsProvider disableTransitionOnChange>
@@ -222,7 +311,9 @@ export default function WorkoutSelector() {
               gap: 3
             }}
           >
-            {filteredWorkouts.map((workout, index) => (
+            {sortedWorkouts.map((workout) => {
+              const isFavorite = favorites.includes(workout.id)
+              return (
               <Card
                 key={workout.id}
                 size='lg'
@@ -235,10 +326,54 @@ export default function WorkoutSelector() {
                   '&:hover': { transform: 'scale(1.02)', boxShadow: 'lg' }
                 }}
               >
-                <CardContent>
-                  <Typography level='title-md' mb={1}>
-                    {workout.title}
-                  </Typography>
+                <CardContent
+                  sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}
+                >
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'flex-start',
+                      justifyContent: 'space-between',
+                      gap: 1
+                    }}
+                  >
+                    <Typography level='title-md'>{workout.title}</Typography>
+                    <Box sx={{ display: 'flex', gap: 0.5 }}>
+                      <Tooltip
+                        title={isFavorite ? 'Unfavorite' : 'Favorite'}
+                      >
+                        <IconButton
+                          size='sm'
+                          variant='plain'
+                          color={isFavorite ? 'warning' : 'neutral'}
+                          onClick={() => toggleFavorite(workout.id)}
+                        >
+                          {isFavorite ? (
+                            <StarRoundedIcon />
+                          ) : (
+                            <StarBorderRoundedIcon />
+                          )}
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip
+                        title={
+                          canDeleteWorkouts
+                            ? 'Delete workout file'
+                            : 'Delete is disabled here'
+                        }
+                      >
+                        <IconButton
+                          size='sm'
+                          variant='plain'
+                          color='danger'
+                          disabled={!canDeleteWorkouts || deletingId === workout.id}
+                          onClick={() => handleDeleteWorkout(workout)}
+                        >
+                          <DeleteOutlineRoundedIcon />
+                        </IconButton>
+                      </Tooltip>
+                    </Box>
+                  </Box>
                   <Typography level='body-sm' color='neutral'>
                     Duration: {workout.durationLabel}
                   </Typography>
@@ -257,14 +392,15 @@ export default function WorkoutSelector() {
                     fullWidth
                     variant='solid'
                     color='success'
-                    loading={loadingIndex === index}
-                    onClick={() => handleStartWorkout(workout, index)}
+                    loading={loadingId === workout.id}
+                    onClick={() => handleStartWorkout(workout)}
                   >
                     Start
                   </Button>
                 </Box>
               </Card>
-            ))}
+            )
+            })}
           </Box>
         </Box>
       </Box>

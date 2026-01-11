@@ -1,10 +1,13 @@
-const { app, BrowserWindow, shell } = require('electron')
+const { app, BrowserWindow, shell, ipcMain } = require('electron')
+const fs = require('fs/promises')
+const fsSync = require('fs')
 const path = require('path')
 const { spawn } = require('child_process')
 const http = require('http')
 
 const DEFAULT_PORT = Number(process.env.APP_PORT || 8000)
 const isDev = !app.isPackaged
+const WORKOUT_ID_PATTERN = /^[A-Za-z0-9_-]+$/
 let backendProcess = null
 let backendStarting = null
 let isQuitting = false
@@ -40,8 +43,40 @@ function getBackendBinaryPath() {
     process.platform === 'win32'
       ? 'indoorcycling-backend.exe'
       : 'indoorcycling-backend'
+  const onedirPath = path.join(
+    process.resourcesPath,
+    'backend',
+    'indoorcycling-backend',
+    binaryName
+  )
+  if (fsSync.existsSync(onedirPath)) {
+    return onedirPath
+  }
   return path.join(process.resourcesPath, 'backend', binaryName)
 }
+
+function getWorkoutDir() {
+  return path.join(app.getAppPath(), 'src', 'constants', 'workouts')
+}
+
+ipcMain.handle('workouts:can-delete', () => !app.isPackaged)
+
+ipcMain.handle('workouts:delete', async (_event, id) => {
+  if (app.isPackaged) {
+    return { ok: false, error: 'deletion-disabled' }
+  }
+  if (typeof id !== 'string' || !WORKOUT_ID_PATTERN.test(id)) {
+    return { ok: false, error: 'invalid-id' }
+  }
+
+  const filePath = path.join(getWorkoutDir(), `${id}.json`)
+  try {
+    await fs.unlink(filePath)
+    return { ok: true }
+  } catch (error) {
+    return { ok: false, error: error?.message ?? 'delete-failed' }
+  }
+})
 
 async function startBackend() {
   if (backendStarting) return backendStarting
@@ -67,6 +102,7 @@ async function startBackend() {
       const backendPath = getBackendBinaryPath()
       backendProcess = spawn(backendPath, [], {
         env: { ...process.env, APP_PORT: String(port) },
+        cwd: path.dirname(backendPath),
         stdio: 'inherit',
         windowsHide: true
       })
