@@ -27,8 +27,11 @@ import SettingsRoundedIcon from '@mui/icons-material/SettingsRounded'
 import { useNavigate } from 'react-router-dom'
 
 import Navigation from './Navigation'
+import type { Step } from '../entities/step'
 
 type HeaderProps = {
+  workoutData: Step[]
+  currentStepIndex: number
   workoutElapsedSeconds?: number
   workoutTotalSeconds?: number
   isWorkoutRunning?: boolean
@@ -78,6 +81,8 @@ const formatClock = (seconds?: number) => {
 }
 
 export default function Header({
+  workoutData,
+  currentStepIndex,
   workoutElapsedSeconds,
   workoutTotalSeconds,
   isWorkoutRunning,
@@ -147,7 +152,10 @@ export default function Header({
           <ModalClose />
           <DialogTitle>Cyclindoors</DialogTitle>
           <Box sx={{ px: 1 }}>
-            <Navigation />
+            <Navigation
+              workoutData={workoutData}
+              currentStepIndex={currentStepIndex}
+            />
           </Box>
         </Drawer>
       </Box>

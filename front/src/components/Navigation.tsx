@@ -6,12 +6,11 @@ import Chip from '@mui/joy/Chip'
 import ListItem from '@mui/joy/ListItem'
 import Typography from '@mui/joy/Typography'
 import { useEffect, useRef } from 'react'
-import { Step } from '../entities/Step'
+import type { Step } from '../entities/step'
 import useCyclingDataStore from '../store/useCyclingDataStore'
 
 interface WorkoutListProps {
   workoutData: Step[]
-  currentStep: Step
   currentStepIndex: number
 }
 
@@ -27,7 +26,6 @@ const wattsFromPercent = (percent: number, ftp: number) =>
 
 export default function WorkoutList({
   workoutData,
-  currentStep,
   currentStepIndex
 }: WorkoutListProps) {
   const itemRefs = useRef<(HTMLLIElement | null)[]>([])
@@ -68,11 +66,13 @@ export default function WorkoutList({
             <ListItem
               key={index}
               sx={{ width: '100%' }}
-              ref={(el) => (itemRefs.current[index] = el)}
+              ref={(el) => {
+                itemRefs.current[index] = el
+              }}
             >
               <Card
                 variant={isCurrent ? 'outlined' : 'solid'}
-                color={isCurrent ? 'primary' : ''}
+                color={isCurrent ? 'primary' : 'neutral'}
                 outline-color={isCurrent ? 'primary' : 'neutral'}
                 sx={{
                   display: 'flex',

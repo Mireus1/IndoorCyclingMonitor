@@ -313,7 +313,6 @@ export default function Home() {
         <Layout.SideDrawer onClose={() => setDrawerOpen(false)}>
           <Navigation
             workoutData={workoutSteps} // ← use selected workout
-            currentStep={currentStep}
             currentStepIndex={currentStepIndex}
           />
         </Layout.SideDrawer>
@@ -351,6 +350,8 @@ export default function Home() {
       >
         <Layout.Header>
           <Header
+            workoutData={workoutSteps}
+            currentStepIndex={currentStepIndex}
             workoutElapsedSeconds={elapsedTime}
             workoutTotalSeconds={totalDuration}
             isWorkoutRunning={isRunning}
@@ -362,7 +363,6 @@ export default function Home() {
         <Layout.SideNav>
           <Navigation
             workoutData={workoutSteps} // ← use selected workout
-            currentStep={currentStep}
             currentStepIndex={currentStepIndex}
           />
         </Layout.SideNav>
@@ -541,7 +541,7 @@ export default function Home() {
                         }}
                       >
                         <Typography
-                          level='display-md'
+                          level='h1'
                           sx={{
                             fontWeight: 700,
                             letterSpacing: -1,
@@ -696,7 +696,7 @@ export default function Home() {
                     }}
                   >
                     <Typography
-                      level='display-sm'
+                      level='h2'
                       sx={{
                         fontWeight: 700,
                         letterSpacing: -0.8,
